@@ -1,0 +1,25 @@
+DataFrame:一种不可变的分布式数据集
+
+1. 创建
+    stringJSONRDD(JSON数据）
+    swimmersJSON = spark.read.json(stringJSONRDD)
+    创建临时表
+    swimmersJSON.createOrReplaceTempView("swimmersJSON")
+    
+2. 简单查询
+    2.1 DataFrame API查询
+        swimmersJSON.show()
+        所有元素
+        
+    2.2 SQL查询
+        spark.sql("select * from swimmersJSON").collect()
+        
+    2.3 RDD的交互操作
+        (1) 使用反射来推断模式
+        #打印模式
+        swimmersJSON.printSchema()
+        
+        (2) 编程指定模式
+        #导入类型
+        from pyspark.sql.types import *
+        
