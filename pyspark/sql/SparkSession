@@ -1,0 +1,175 @@
+pyspark.sql.SparkSession Main entry point for DataFrame and SQL functionality.
+==============================================================================
+
+    A SparkSession can be used create DataFrame, register DataFrame as tables, execute SQL over tables, cache tables, 
+                               --------------------------------------------------------------------------------------
+    and read parquet files. To create a SparkSession, use the following builder pattern:
+    -----------------------
+    
+>>>spark = SparkSession.builder \
+...     .master("local") \
+...     .appName("Word Count") \
+...     .config("spark.some.config.option", "some-value") \
+...     .getOrCreate()
+
+builder
+    A class attribute having a Builder to construct SparkSession instances
+    
+appName(name)[source]
+    Sets a name for the application, which will be shown in the Spark web UI.
+    If no application name is set, a randomly generated name will be used.
+    
+config(key=None, value=None, conf=None)[source]
+    Sets a config option. Options set using this method are automatically propagated to both SparkConf and SparkSession’s 
+    own configuration.
+    
+    For an existing SparkConf, use conf parameter.
+        >>> from pyspark.conf import SparkConf
+        >>> SparkSession.builder.config(conf=SparkConf())
+        <pyspark.sql.session...
+        
+    For a (key, value) pair, you can omit parameter names.
+        >>> SparkSession.builder.config("spark.some.config.option", "some-value")
+        <pyspark.sql.session...
+        Parameters
+            key – a key name string for configuration property
+            value – a value for configuration property
+            conf – an instance of SparkConf
+            
+enableHiveSupport()
+    Enables Hive support, including connectivity to a persistent Hive metastore, support for Hive serdes, 
+    and Hive user-defined functions.
+    
+getOrCreate()
+    Gets an existing SparkSession or, if there is no existing one, creates a new one based on the options 
+    set in this builder.
+        >>> s1 = SparkSession.builder.config("k1", "v1").getOrCreate()
+        >>> s1.conf.get("k1") == s1.sparkContext.getConf().get("k1") == "v1"
+        True
+        
+master(master)
+    Sets the Spark master URL to connect to, such as “local” to run locally, “local[4]” to run locally with 4 cores, 
+    or “spark://master:7077” to run on a Spark standalone cluster.
+    
+catalog
+    Interface through which the user may create, drop, alter or query underlying databases, tables, functions etc.
+    
+conf
+    Runtime configuration interface for Spark.
+    This is the interface through which the user can get and set all Spark and Hadoop configurations that are relevant 
+    to Spark SQL.When getting the value of a config, this defaults to the value set in the underlying SparkContext, if any.
+    
+createDataFrame(data, schema=None, samplingRatio=None, verifySchema=True)
+    Creates a DataFrame from an RDD, a list or a pandas.DataFrame.
+    
+    Parameters
+        data – an RDD of any kind of SQL data representation(e.g. row, tuple, int, boolean, etc.), or list, 
+        or pandas.DataFrame.
+
+        schema – a pyspark.sql.types.DataType or a datatype string or a list of column names, default is None.
+        The data type string format equals to pyspark.sql.types.DataType.simpleString, except that top level struct type can omit the struct<> and atomic types use typeName() as their format, e.g. use byte instead of tinyint for pyspark.sql.types.ByteType. We can also use int as a short name for IntegerType.
+
+        samplingRatio – the sample ratio of rows used for inferring
+
+        verifySchema – verify data types of every row against schema.
+        
+            >>> l = [('Alice', 1)]
+            >>> spark.createDataFrame(l).collect()
+            [Row(_1='Alice', _2=1)]
+            >>> spark.createDataFrame(l, ['name', 'age']).collect()
+            [Row(name='Alice', age=1)]
+            
+            >>> d = [{'name': 'Alice', 'age': 1}]
+            >>> spark.createDataFrame(d).collect()
+            [Row(age=1, name='Alice')]
+            
+            >>> rdd = sc.parallelize(l)
+            >>> spark.createDataFrame(rdd).collect()
+            [Row(_1='Alice', _2=1)]
+            >>> df = spark.createDataFrame(rdd, ['name', 'age'])
+            >>> df.collect()
+            [Row(name='Alice', age=1)]
+            
+            >>> from pyspark.sql import Row
+            >>> Person = Row('name', 'age')
+            >>> person = rdd.map(lambda r: Person(*r))
+            >>> df2 = spark.createDataFrame(person)
+            >>> df2.collect()
+            [Row(name='Alice', age=1)]
+            
+            >>> from pyspark.sql.types import *
+            >>> schema = StructType([
+            ...    StructField("name", StringType(), True),
+            ...    StructField("age", IntegerType(), True)])
+            >>> df3 = spark.createDataFrame(rdd, schema)
+            >>> df3.collect()
+            [Row(name='Alice', age=1)]
+            
+            >>> spark.createDataFrame(df.toPandas()).collect()  # doctest: +SKIP
+            [Row(name='Alice', age=1)]
+            >>> spark.createDataFrame(pandas.DataFrame([[1, 2]])).collect()  # doctest: +SKIP
+            [Row(0=1, 1=2)]
+            
+            >>> spark.createDataFrame(rdd, "a: string, b: int").collect()
+            [Row(a='Alice', b=1)]
+            >>> rdd = rdd.map(lambda row: row[1])
+            >>> spark.createDataFrame(rdd, "int").collect()
+            [Row(value=1)]
+            >>> spark.createDataFrame(rdd, "boolean").collect() # doctest: +IGNORE_EXCEPTION_DETAIL
+            
+newSession()
+    Returns a new SparkSession as new session, that has separate SQLConf, registered temporary views and UDFs, 
+    but shared SparkContext and table cache.
+    
+range(start, end=None, step=1, numPartitions=None)[source]
+    Create a DataFrame with single pyspark.sql.types.LongType column named id, containing elements in a range 
+    from start to end (exclusive) with step value step.
+
+    Parameters
+        start – the start value
+        end – the end value (exclusive)
+        step – the incremental step (default: 1)
+        numPartitions – the number of partitions of the DataFrame
+        
+        >>> spark.range(1, 7, 2).collect()
+        [Row(id=1), Row(id=3), Row(id=5)]
+
+        >>> spark.range(3).collect()
+        [Row(id=0), Row(id=1), Row(id=2)]
+        
+read
+    Returns a DataFrameReader that can be used to read data in as a DataFrame.
+    
+readStream
+    Returns a DataStreamReader that can be used to read data streams as a streaming DataFrame.
+    
+sparkContext
+    Returns the underlying SparkContext.
+    
+sql(sqlQuery)[source]
+    Returns a DataFrame representing the result of the given query.
+    
+    >>> df.createOrReplaceTempView("table1")
+    >>> df2 = spark.sql("SELECT field1 AS f1, field2 as f2 from table1")
+    >>> df2.collect()
+    [Row(f1=1, f2='row1'), Row(f1=2, f2='row2'), Row(f1=3, f2='row3')]
+    
+stop()[source]
+    Stop the underlying SparkContext.
+    
+streams
+    Returns a StreamingQueryManager that allows managing all the StreamingQuery StreamingQueries active on this context.
+    
+table(tableName)
+    Returns the specified table as a DataFrame.
+    >>> df.createOrReplaceTempView("table1")
+    >>> df2 = spark.table("table1")
+    >>> sorted(df.collect()) == sorted(df2.collect())
+    True
+    
+udf
+    Returns a UDFRegistration for UDF registration.
+    
+version
+    The version of Spark on which this application is running.
+    
