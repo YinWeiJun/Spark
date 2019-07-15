@@ -8,11 +8,28 @@ DataFrame:一种不可变的分布式数据集
     
 2. 简单查询
     2.1 DataFrame API查询
-        swimmersJSON.show()
-        所有元素
+        (1) swimmersJSON.show()
+            所有元素
+        
+        (2) 行数
+            swimmers.count()
+            
+        (3) 筛选
+            #获取age=22的id
+            swimmers.select("id", "age").filter("age"=22).show()
+            或者
+            swimmers.select(swimmers.id, swimmers.age).filter(swimmers.age == 22).show()
+            #蓝眼睛
+            swimmers.select("name", "eyecolor").filter("eyeColor lik 'b%'").show()
+        
         
     2.2 SQL查询
         spark.sql("select * from swimmersJSON").collect()
+        
+        行数
+        spark.sql("select count(1) from swimmers").show()
+        
+        spark.sql("select id, age from swimmers where age = 22").show()
         
     2.3 RDD的交互操作
         (1) 使用反射来推断模式
@@ -22,4 +39,22 @@ DataFrame:一种不可变的分布式数据集
         (2) 编程指定模式
         #导入类型
         from pyspark.sql.types import *
-        
+        #生成以逗号分割的数据
+        stringCSVRDD = sc.parallelize([
+            (123, 'Katie', 19, 'brown'),
+            (234, 'Micheal', 22, 'green'),
+            (345, 'Simone', 23, 'blue')
+            ])
+        #指定模式
+        schema = StructType([
+            StructField("id", LongType(), True),
+            StructField("name", StringType, True),
+            StructField("age", LongType, True),
+            StructField("eyecolor", StringType, True)
+            ])
+            (StructField(字段名， 数据类型， 是否为空）
+        #对RDD应用该模式并且创建DataFrame
+        swimmers = spark.createDataFrame(stringCSVRDD, schema)
+        #创建临时视图
+        swimmers.createOrReplaceTempView("swimmers")
+            
