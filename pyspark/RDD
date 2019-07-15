@@ -1,0 +1,80 @@
+RDD:弹性分布式数据集
+
+1. 创建RDD
+    要么用.parallelize(...),要么引用位于本地或者外部的某个文件（或者多个文件）
+    data = sc.parallelize(
+        [('Amber', 22), ('Alfred', 23)])
+    
+    data_from_file = sc.\
+        textFile('filepath', 4)
+        (4为分区个数，经验法则一般分为2-4个）
+        
+    从文件读取数据时，文件中的每一行成为RDD的一个元素。
+    
+2. 转换
+    2.1 .map(...)
+        将方法应用到每个RDD元素上
+        data_2014 = data_from_file_conv.map(lambda row: int(row[16])
+        
+    2.2 .filter(...)
+        从数据集中过滤数据
+        data_filtered = dta_from_file_conv.filter(lambda row: row[16] == '2014')
+        data_filtered.count()
+        
+   2.3 .flatMap(...)
+        和.map(...)类似，只是此方法返回一个整合后的结果
+        如二维数组，.map()返回的还是二维数组，.flatMap()返回一维数组
+        data_2014_flat = data_from_file_conv.flatMap(lambda row: (row[16], int(row[16]) + 1))
+        data_2014_flat.take(10)
+        
+    2.4 .distinct(...)
+        返回指定咧中不同值的列表。（去重）
+        distinct_gender = data_from_file_conv.map(
+            lambda row: row[5]).distinct()
+        distinct_gender.collect()
+        
+    2.5 .sample(...)
+        返回随机样本，第一个参数指定采样是否应该替换，第二个参数定义返回数据的分数，第三个参数是伪随机数产生的种子
+        fraction = 0.1
+        data_sample = data_from_file_conv.sample(False, fraction, 666)
+        
+   2.6 .leftOuterJoin(...)
+        如SQL的左连接
+        radd3 = rdd1.leftOuterJoin(rdd2)
+        
+   2.7 .repartition(...)
+        重新对数据集进行分区，改变了数据集分区的数量（谨慎）
+        rdd1 = radd1.repartition(4)
+        
+3. 操作
+    3.1 .take(...)
+        获取前n个数据,可以用.takeSample(False, 1. 667)获取随机的一条记录
+        data_first = data_from_file_conv.take(1)
+        
+    3.2 .collect(...)
+        返回返回所有RDD的元素
+        
+    3.3 .reduce(...)
+        指定方法减少RDD中的元素
+        rdd1.map(lambda row: row[1]).reduce(lambda x, y: x + y)
+        
+        data_key = sc.parallelize(
+            [('a', 4), ('b', 2), ('a', 1)])
+        data_key.reduceByKey(lambda x, y: x + y).collect()
+        out: [('a', 5), ('b', 2)]
+        
+    3.4 .count(...)
+        统计RDD中元素数量
+        data_reduce.count()
+        
+    3.5 .saveAsTextFile(...)
+        把RDD保存为文本文件,都以字符串存储
+        data_key.saveAsTextFile('filepath') 
+           
+    3.6 .foreach(...)
+        迭代的方式一个接一个运行
+        def f(x):
+            print(x)
+        data_key.foreach(f)
+        
+      
