@@ -21,3 +21,10 @@
     datas_new = datas_new.withColumn('trac_info', parse_udf(datas)) //新增一列
     datas_new = datas_new.fillna('none') //没有值的地方填充‘none’
     
+4. 去除重复行
+    df = df.dropDuplicates()
+    
+5. 添加ID列
+    from pyspark.sql import functions
+    df.withColumn('new_id', functions.monotonically_increasing_id()).show()
+    
