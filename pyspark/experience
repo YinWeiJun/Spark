@@ -1,0 +1,23 @@
+1. spark调用之前，需要先申请通道，spark-submit,如：
+    park-submit \
+        --driver-memory 4G\
+        --num-executors 100 \
+        --executor-memory 6G \
+        --executor-cores 4 \
+        --conf spark.default.parallelism=1000 \
+        --conf spark.storage.memoryFraction=0.5 \
+        --conf spark.shuffle.memoryFraction=0.3 \
+        --conf spark.yarn.executor.memoryOverhead=8192 \
+        --conf spark.sql.catalogImplementation=hive \
+        --queue root.dx_main_prod \
+        GetTrac.py
+
+2. DataFrame转rdd
+    dataFrame.rdd
+  
+3. 常用数据转换模式：将数据信息，进行处理存到心得column里面，然后获取就可以了，如：
+    parse_udf = udf(self.parse_coordinates, StringType()) //self.parse_coordinate接受datas参数，返回字符串
+    datas_new = datas.dropna() //删除没有值的列
+    datas_new = datas_new.withColumn('trac_info', parse_udf(datas)) //新增一列
+    datas_new = datas_new.fillna('none') //没有值的地方填充‘none’
+    
