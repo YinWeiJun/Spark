@@ -29,3 +29,5 @@
     df.withColumn('new_id', functions.monotonically_increasing_id()).show()
     
 6. spark为分布式程序，调用函数不能为类内部的函数，必须是全局函数
+
+7. spark文件存储路径只能为liuhengyu路径下
