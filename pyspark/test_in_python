@@ -16,8 +16,9 @@
     
     # 在DataFrame中查询数据
     df.createOrReplaceTempView("tb")
-    ids = spark.sql('select id from tb')
-    ids[0]
+    ids_df = spark.sql('select id from tb')
+    ids_pd = ids.toPandas()
+    ids_pd[0]
     >>>1
     
     # 解析DataFrame的数据，并添加一列信息
