@@ -1,0 +1,40 @@
+1. python测试pyspark
+    from pyspark.sql import SparkSession
+    from pyspark import SparkContext
+    from pyspark.sql import Row
+    from pyspark.sql import SQLContext,HiveContext
+    from pyspark.sql.functions import udf
+    from pyspark.sql.types import *
+    
+    spark = SparkSession.builder.master("local").appName("test").config("k","v").getOrCreate()
+    
+    # 创建DataFrame
+    ll = [(1, {"a":1, "b":2}),(2, {"c":3, "d":4})]
+    df = spark.createDataFrame(ll, ['id', 'value'])
+    df.collect()
+    >>>[Row(id=1, value={u'a': 1, u'b': 2}), Row(id=2, value={u'c': 3, u'd': 4})]
+    
+    # 在DataFrame中查询数据
+    df.createOrReplaceTempView("tb")
+    ids = spark.sql('select id from tb')
+    ids[0]
+    >>>1
+    
+    # 解析DataFrame的数据，并添加一列信息
+    def parse(id):
+        return '1'
+    parse_udf = udf(parse, StringType())
+    df2 = df.withColumn("test", parse_udf(df["id"]))
+    df2.collect()
+    >>>[Row(id=1, value={u'a': 1, u'b': 2}, test=u'1'), Row(id=2, value={u'c': 3, u'd': 4}, test=u'1')]
+    
+    # 反解析数据
+    def load_v(v):
+        d = json.loads(v)
+        return [d["a"]]
+    res = ddff.rdd.flatMap(lambda x: load_v(x["test"]))
+    res.first()
+    >>>1
+    
+    
+    
