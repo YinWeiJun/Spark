@@ -1,0 +1,7 @@
+查看spark上运行程序的print等内容
+
+1. Google浏览器安装Proxy SwitchyOmega插件
+2. 进入插件配置代理proxy和auto switch并应用选项
+3. 复制spark启动头到浏览器
+4. 在jobs中进入自己的程序
+5. 到Stages的Tasks中节点中查看strerr即可
