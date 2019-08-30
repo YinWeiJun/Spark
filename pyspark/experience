@@ -38,5 +38,5 @@
 
 9. 拉取文件： hadoop fs -get/-ls等等
 
-10. spark上的程序想要统计某个事件发生的次数，可以用累加器 accm = sc.accumulator, 在事件中进行全局声明global accm,然后调用accm += 1,
-最后通过accm.value输出即可
+10. spark上的程序想要统计某个事件发生的次数，可以用累加器 accm = sc.accumulator(0), 在事件中进行全局声明global accm,然后调用accm += 1,
+最后通过accm.value输出即可(PS：driver进程想要获取accm.value的值，需要在进程中触发accm的所在函数，如rdd.count()，否则输出结果会为0)
