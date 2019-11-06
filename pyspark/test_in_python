@@ -19,7 +19,11 @@
     ids_df = spark.sql('select id from tb')
     ids_pd = ids_df.toPandas()
     ids_pd['id'][0]
-    >>>1
+    >>>1 (<type 'numpy.int64'>)
+    # 获取具体的值
+    id = ids_pd['id'][0].item()
+    id
+    >>>1 (<type 'int'>)
     
     # 解析DataFrame的数据，并添加一列信息
     def parse(id):
@@ -37,5 +41,12 @@
     res.first()
     >>>1
     
-    
+a.empty    if(a.empty):print("!!")    判断a是否为空
+
+a.item()     没有用过，应该a.item(i)  表示第i个节点
+
+a.any()       if(a.any() in [1,2,3,4]):print("!!")    判断 a中的任意一个值是否在[1,2,3,4]中
+
+a.all()         if(a.all() in [1,2,3,4]):print("!!")    判断 a中的所有值是否在[1,2,3,4]中
+
     
